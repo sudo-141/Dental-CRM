@@ -2,37 +2,43 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/navigation';
-import dummyCredentials from '../dummy-credentials.json';
 
 export default function LoginPage() {
-  const [isClient, setIsClient] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    const user = dummyCredentials.users.find(
-      (u) => u.username === email && u.password === password
-    );
-    
-    if (user) {
-      localStorage.setItem('userRole', user.role);
-      
-      if (user.role === 'Super Admin') {
-        router.push('/superadmin');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        // Also keep localStorage updated for client-side purely visual rendering if needed (like the dashboard sidebar),
+        // but rely on cookie for actual security (middleware).
+        localStorage.setItem('userRole', data.role);
+
+        if (data.role === 'Super Admin') {
+          router.push('/superadmin');
+        } else {
+          router.push('/dashboard');
+        }
       } else {
-        router.push('/dashboard');
+        setError(data.error || 'Invalid email or password');
       }
-    } else {
-      setError('Invalid email or password');
+    } catch {
+      setError('An error occurred during login');
     }
   };
 

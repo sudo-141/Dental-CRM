@@ -151,17 +151,17 @@ export default function SuperAdminLayout({
   const router = useRouter();
 
   useEffect(() => {
-    // Check if user is actually Super Admin
-    const role = localStorage.getItem('userRole');
-    if (role !== 'Super Admin') {
-      router.push('/');
-    } else {
-      setMounted(true);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    setMounted(true);
   }, []);
 
   if (!mounted) return null;
+
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    await fetch('/api/auth/logout', { method: 'POST' });
+    localStorage.removeItem('userRole');
+    window.location.href = '/';
+  };
 
   return (
     <div className="dashboard-layout">
@@ -213,16 +213,15 @@ export default function SuperAdminLayout({
           
           <div style={{ flex: 1, minHeight: '2rem' }}></div>
 
-          <Link 
-            href="/"
-            onClick={() => localStorage.removeItem('userRole')}
+          <button
+            onClick={handleLogout}
             className="nav-item"
             title={!expanded ? 'Log Out' : ''}
-            style={{ color: '#ff4444' }}
+            style={{ color: '#ff4444', background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', fontFamily: 'inherit', fontSize: '0.85rem' }}
           >
             <IconLogout />
             <span className="nav-item-text">Log Out</span>
-          </Link>
+          </button>
         </nav>
       </aside>
 

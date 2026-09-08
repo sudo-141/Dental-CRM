@@ -47,9 +47,10 @@ export default function SuperAdminTopBar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
     localStorage.removeItem('userRole');
-    router.push('/');
+    window.location.href = '/';
   };
 
   const handleTour = () => {
